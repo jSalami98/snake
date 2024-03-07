@@ -10,7 +10,7 @@
  * par   1: Draws an extra snake part                                                                                                        |   High
  * fixed 2: The right and bottem of the screen don't kill the snake                                                                          |   High
  * par   3: Food sometimes does not respawn sometimes                                                                                        |   Low
- *       4: Multiple inputs can be entered before the logic updates. This causes the snake to try to move back onto itself, killing itself   |   Medium
+ * fixed 4: Multiple inputs can be entered before the logic updates. This causes the snake to try to move back onto itself, killing itself   |   Medium
  *       5: game lags at random times (not sure this is my falt, and not sure how to fix it yet)                                             |   Low
 */
 
@@ -74,16 +74,16 @@ void placeFood(int gs[GAME_SPACE_SIZE][GAME_SPACE_SIZE], int snakeSize, int spac
  * 3                |   2, 4
  * 4                |   1,3
 */
-void handleChangeDir(snake &s, int newDir, bool* lock)          //this doesn't work -_-
+void handleChangeDir(snake &s, int newDir, bool& lock)          //this doesn't work -_-
 {
     //if the snake's dir and the new dir have the same evenness (both are even or odd) return else snake.dir = new dir
 
-    if(!(*lock) || s.dir % 2 == newDir % 2)
+    if(lock || s.dir % 2 == newDir % 2)
     {
         return;
     }
     s.dir = newDir;
-    *lock = false;
+    lock = true;
 }
 
 void printGameSpace(int gs[GAME_SPACE_SIZE][GAME_SPACE_SIZE])
@@ -131,7 +131,7 @@ int main(int argc, char** argv)
     bool headFlag = false;      //Has the head been updated yet?
     bool tailFlag = false;      //Has the tail been updated yet?
     bool killFlag = false;      //Has the snake been killed
-    bool inputFlag = true;      //Has the direction been updated for this logic cycle?
+    bool inputLock = false;      //Has the direction been updated for this logic cycle?
     bool findFood = true;      //for debug - has the food been found
     int delay = 0;              //My bootleg wait
     int gameSpace[GAME_SPACE_SIZE][GAME_SPACE_SIZE];    //holds all the game play stuff; -1 = food; 0 = open space; int>0 = part of snake (1 is the head, highest is the tail)
@@ -169,7 +169,7 @@ int main(int argc, char** argv)
                 {
                     case SDLK_w:
                     case SDLK_UP:
-                        handleChangeDir(sk, 1, &inputFlag);
+                        handleChangeDir(sk, 1, inputLock);
                         #ifdef SNAKE_DEBUG
                         std::cout << "UP" << std::endl;
                         #endif
@@ -177,7 +177,7 @@ int main(int argc, char** argv)
                         
                     case SDLK_a:
                     case SDLK_LEFT:
-                        handleChangeDir(sk, 4, &inputFlag);
+                        handleChangeDir(sk, 4, inputLock);
                         #ifdef SNAKE_DEBUG
                         std::cout << "RIGHT" << std::endl;
                         #endif
@@ -185,7 +185,7 @@ int main(int argc, char** argv)
 
                     case SDLK_s:
                     case SDLK_DOWN:
-                        handleChangeDir(sk, 3, &inputFlag);
+                        handleChangeDir(sk, 3, inputLock);
                         #ifdef SNAKE_DEBUG
                         std::cout << "DOWN" << std::endl;
                         #endif
@@ -193,7 +193,7 @@ int main(int argc, char** argv)
 
                     case SDLK_d:
                     case SDLK_RIGHT:
-                        handleChangeDir(sk, 2, &inputFlag);
+                        handleChangeDir(sk, 2, inputLock);
                         #ifdef SNAKE_DEBUG
                         std::cout << "LEFT" << std::endl;
                         #endif
@@ -397,7 +397,7 @@ int main(int argc, char** argv)
             */
            findFood = false;
         }
-        inputFlag = true;
+        inputLock = false;
 
         /*  Draw    */
         /*  Blank Screen*/
